@@ -1,5 +1,3 @@
-print("Hello world!")
-
 from machine import Pin, time_pulse_us
 import time
 
