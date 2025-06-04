@@ -29,3 +29,8 @@ class Vehicle:
         degrees_to_turn = (direction.value - self.dir.value) * 90
 
         # TODO: Obsługa silnika
+
+
+    def set_pos(self, x, y):
+        self.x = x
+        self.y = y
