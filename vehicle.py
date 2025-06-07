@@ -20,6 +20,13 @@ class Vehicle:
         elif direction == Direction.LEFT:
             return self.sensor_left.measure()
 
+    def all_measurements(self):
+        return {
+            Direction.LEFT: self.sensor_left.measure(),
+            Direction.UP: self.sensor_up.measure(),
+            Direction.RIGHT: self.sensor_right.measure()
+        }
+
     def ride_forward(self, distance):
         # Na ten moment taki kod do testowania symulacji, bo nie obsługuje silnika.
         if self.is_simulation:
@@ -54,14 +61,38 @@ class Vehicle:
         # TODO: Obsługa silnika
 
 
-
-
         self.dir = direction
 
+    def turn_left(self, epsilon=0.1):
+        if self.is_simulation:
+            self.set_direction(Direction((self.dir.value - 1) % 4), epsilon)
+            return
+
+        # TODO: Obsługa silnika
+
+    def turn_right(self, epsilon=0.1):
+        if self.is_simulation:
+            self.set_direction(Direction((self.dir.value + 1) % 4), epsilon)
+            return
+
+        # TODO: Obsługa silnika
+
+    def turn(self, direction):
+        if direction == Direction.LEFT:
+            self.turn_left()
+        elif direction == Direction.RIGHT:
+            self.turn_right()
+        elif direction == Direction.UP:
+            pass
+        else:
+            raise ValueError("Invalid direction. Use Direction.LEFT or Direction.RIGHT.")
 
     def set_pos(self, x, y):
         self.x = x
         self.y = y
+
+    def get_pos(self):
+        return self.x, self.y
 
     def you_are_in_the_Matrix_Neo(self):
         self.is_simulation = True

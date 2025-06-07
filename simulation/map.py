@@ -8,6 +8,7 @@ class Map:
         self.grid = None
         self.start = None
         self.finish = []
+        self.car = None
         self.load_from_image(image_path)
 
     def load_from_image(self, image_path):
@@ -32,8 +33,22 @@ class Map:
         img.close()
 
     def display_map(self):
-        for y in range(self.height):
-            print(' '.join(['#' if self.grid[x][y] == 1 else '.' for x in range(self.width)]))
+        if self.car:
+            for y in range(self.height):
+                line = ""
+                for x in range(self.width):
+                    if (x, y) == self.car.get_pos():
+                        line += 'C '
+                    elif self.grid[x][y] == 1:
+                        line += '# '
+                    elif self.grid[x][y] == 0:
+                        line += '. '
+                print(line.strip())
+
+        else:
+            for y in range(self.height):
+                print(' '.join(['#' if self.grid[x][y] == 1 else '.' for x in range(self.width)]))
+
         print(f"Map size: {self.width}x{self.height}")
         print(f"Starting point: {self.start}")
         print(f"Finish area: {self.finish}")
@@ -43,3 +58,6 @@ class Map:
 
     def is_in_finish(self, x, y):
         return (x, y) in self.finish
+
+    def add_vehicle(self, car):
+        self.car = car
