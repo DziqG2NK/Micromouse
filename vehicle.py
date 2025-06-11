@@ -77,6 +77,13 @@ class Vehicle:
 
         # TODO: Obsługa silnika
 
+    def turn_around(self, epsilon=0.1):
+        if self.is_simulation:
+            self.set_direction(Direction((self.dir.value + 2) % 4), epsilon)
+            return
+
+        # TODO: Obsługa silnika
+
     def turn(self, direction):
         if direction == Direction.LEFT:
             self.turn_left()

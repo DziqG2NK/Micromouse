@@ -26,18 +26,30 @@ def create_virtual_vehicle():
 
     return vehicle
 
-map = Map(r'C:\Users\Domin\Documents\GitHub\Micromouse\simulation\spiral_map.png')
+map = Map(r'C:\Users\Domin\Documents\GitHub\Micromouse\simulation\backtracking_map.png')
 
 car = create_virtual_vehicle()
 
 map.add_vehicle(car)
 
 engine = MappingLogic(car)
-engine.run()
+engine.create_start_node()
+# engine.run()
 
-map.display_map()
+# map.display_map()
 
+current_node = engine.start
+car.dir = Direction.DOWN
 
-all_measurements(car)
-print("TEST")
+while current_node is not None:
+    map.display_map()
+    all_measurements(car)
+    current_node = engine.run_cycle(current_node)
+
+# print(car.get_pos())
+#
+# engine.backtrack(last_node)
+# map.display_map()
+# print(car.get_pos())
+
 
