@@ -1,4 +1,5 @@
 from machine import Pin, time_pulse_us
+from motors import some_fun
 import time
 
 trigger_1 = Pin(3, Pin.OUT)
@@ -28,6 +29,9 @@ def measure_distance(trigger, echo):
     distance_cm = duration / 58.0  # według dokumentacji SRF05
     return distance_cm
 
+some_fun()
+
+"""
 while True:
     measurements = [None, None]
     for i, (trigger, echo) in enumerate(elems):
@@ -39,3 +43,4 @@ while True:
     else:
         print("Brak echa")
     time.sleep(0.5)
+"""
