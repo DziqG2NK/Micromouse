@@ -26,7 +26,7 @@ def create_virtual_vehicle():
 
     return vehicle
 
-map = Map(r'C:\Users\Domin\Documents\GitHub\Micromouse\simulation\backtracking_map.png')
+map = Map(r'C:\Users\Domin\Documents\GitHub\Micromouse\simulation\example_map.png')
 
 car = create_virtual_vehicle()
 
