@@ -1,8 +1,6 @@
 from mapping_node import Node
 from directions import Direction
-
-WALL_THRESHOLD = 7 # Dystans w cm od ściany, przy którym łazik uznaje, że ma dalszych rozgałęzień do eksploracji.
-DISTANCE_TO_WALL = 3 # Dystans w cm od ściany, przy którym łazik uznaje, że nie ma już miejsca na jazdę.
+from globals import *
 
 class MappingLogic:
     def __init__(self, vehicle):
@@ -28,8 +26,8 @@ class MappingLogic:
         self.path.append(current_node)
         distance = self.vehicle.measure_distance(direction)
         self.vehicle.turn(direction)
-        self.vehicle.ride_forward(distance - DISTANCE_TO_WALL)
-        return current_node.create_child(self.vehicle.dir, distance - DISTANCE_TO_WALL)
+        self.vehicle.ride_forward(distance - DISTANCE_TO_WALL, True)
+        return current_node.create_child(self.vehicle.dir, *self.vehicle.get_pos())
 
     def backtrack(self, current_node):
         parent_node = self.path.pop()
@@ -47,7 +45,7 @@ class MappingLogic:
         distance = abs(current_node.x - parent_node.x) + abs(current_node.y - parent_node.y)
 
         # Move the vehicle to the parent node
-        self.vehicle.ride_forward(distance)
+        self.vehicle.ride_forward(distance, False)
 
         # Return the parent node
         return parent_node

@@ -1,5 +1,6 @@
 from math import sin, cos
 from directions import Direction
+from globals import WALL_THRESHOLD
 
 
 class Vehicle:
@@ -21,24 +22,38 @@ class Vehicle:
             return self.sensor_left.measure()
 
     def all_measurements(self):
-        return {
-            Direction.LEFT: self.sensor_left.measure(),
-            Direction.UP: self.sensor_up.measure(),
-            Direction.RIGHT: self.sensor_right.measure()
-        }
+        return self.sensor_left.measure(), self.sensor_up.measure(), self.sensor_right.measure()
 
-    def ride_forward(self, distance):
+
+    def ride_forward(self, distance, check_for_road=False):
         # Na ten moment taki kod do testowania symulacji, bo nie obsługuje silnika.
         if self.is_simulation:
-            if self.dir == Direction.UP:
-                self.y -= distance
-            elif self.dir == Direction.RIGHT:
-                self.x += distance
-            elif self.dir == Direction.DOWN:
-                self.y += distance
-            elif self.dir == Direction.LEFT:
-                self.x -= distance
-            return
+            start = True
+
+            while distance > 0:
+                if check_for_road:
+                    if start:
+                        measurement_l, measurement_u, measurement_r = self.all_measurements()
+                        start = False
+
+                    measurement_u = self.measure_distance(Direction.UP)
+
+                    if measurement_u > WALL_THRESHOLD:
+                        measurement_l = min(self.measure_distance(Direction.LEFT), measurement_l)
+                        measurement_r = min(self.measure_distance(Direction.RIGHT), measurement_r)
+                        if measurement_l < self.measure_distance(Direction.LEFT) or measurement_r < self.measure_distance(Direction.RIGHT):
+                            return False
+
+                if self.dir == Direction.UP:
+                    self.y -= 1
+                elif self.dir == Direction.RIGHT:
+                    self.x += 1
+                elif self.dir == Direction.DOWN:
+                    self.y += 1
+                elif self.dir == Direction.LEFT:
+                    self.x -= 1
+                distance -= 1
+            return True
 
         start_dist = self.measure_distance(Direction.UP)
         while self.measure_distance(Direction.UP) < start_dist - distance:
