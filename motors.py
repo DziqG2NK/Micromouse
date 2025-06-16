@@ -5,8 +5,9 @@ from time import sleep
 class MotorController():
 
     MIN_DUTY = 0
-    MOVEMENT_DUTY = 65535
-    ROTATION_DUTY = 65535
+    MAX_DUTY = 65535
+    MOVEMENT_DUTY = 54000
+    ROTATION_DUTY = 52000
 
     # Pins BIN1, BIN2 handles LEFT motor motion
     # Pins AIN1, AIN2 handles RIGHT motor motion
@@ -24,16 +25,11 @@ class MotorController():
         
         
     def stop(self):
+        self.AIN1.duty_u16(MotorController.MIN_DUTY)
+        self.AIN2.duty_u16(MotorController.MIN_DUTY)
         
-        pin12 = Pin(12, Pin.OUT)
-        pin13 = Pin(13, Pin.OUT)
-        pin14 = Pin(14, Pin.OUT)
-        pin15 = Pin(15, Pin.OUT)
-        
-        pin12.value(0)
-        pin13.value(0)
-        pin14.value(0)
-        pin15.value(0)
+        self.BIN1.duty_u16(MotorController.MIN_DUTY)
+        self.BIN2.duty_u16(MotorController.MIN_DUTY)
         
         print("Engines stopped")
         
@@ -65,12 +61,6 @@ class MotorController():
         self.BIN2.duty_u16(MotorController.MIN_DUTY)
         
         print("Driving forward")
-        
-        #print("A:")
-        #print(AIN1.value(), AIN2.value())
-
-        #print("B:")
-        #print(BIN1.value(), BIN2.value())
         
 
     def change_right_motor_speed(self):
@@ -111,7 +101,7 @@ class MotorController():
         
     def test_functionality(self):
         
-        """
+        
         print("right")
         self.right()
         print("wait")
@@ -125,7 +115,7 @@ class MotorController():
         sleep(5)
         
         print("forward")
-        self.left()
+        self.forward()
         print("wait")
         self.log()
         sleep(5)
@@ -133,19 +123,12 @@ class MotorController():
         print("stop")
         self.stop()
         
-        #break
-        self.forward()
         
-        self.log()
-
-        
-        sleep(5)
         """
-
         pin_14 = Pin(14, Pin.OUT)
         pin_15 = Pin(15, Pin.OUT)
         
-        """
+    
         pin_14.value(1)
         pin_15.value(0)
         print("Pin 14: 1, Pin 15: 0")
@@ -157,7 +140,7 @@ class MotorController():
         pin_15.value(1)
         print("Pin 14: 0, Pin 15: 1")
         sleep(3)
-        """
+        
 
         
         print("BFJNDKNJ")
@@ -167,6 +150,7 @@ class MotorController():
         
         pin_14.value(0)
         pin_15.value(0)
+        """
         
    
         
