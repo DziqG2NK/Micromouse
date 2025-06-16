@@ -35,8 +35,8 @@ while True:
     
     if measurements[0] is not None and measurements[1] is not None:
         print("Odległość przedniego: {:.2f} cm".format(measurements[0]))
-        print("Odległość lewego: {:.2f} cm".format(measurements[0]))
-        print("Odległość prawego: {:.2f} cm".format(measurements[1]))
+        print("Odległość lewego: {:.2f} cm".format(measurements[1]))
+        print("Odległość prawego: {:.2f} cm".format(measurements[2]))
     else:
         print("Brak echa")
     time.sleep(0.5)

@@ -1,7 +1,7 @@
 from machine import Pin, time_pulse_us
 from motors import some_fun
 import time
-
+"""
 trigger_1 = Pin(3, Pin.OUT)
 echo_1 = Pin(2, Pin.IN)
 
@@ -32,6 +32,7 @@ def measure_distance(trigger, echo):
 some_fun()
 
 """
+"""
 while True:
     measurements = [None, None]
     for i, (trigger, echo) in enumerate(elems):
@@ -44,3 +45,5 @@ while True:
         print("Brak echa")
     time.sleep(0.5)
 """
+
+class M
