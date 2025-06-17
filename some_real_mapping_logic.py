@@ -9,7 +9,6 @@ class MappingLogic:
         self.start = None
         self.path = []
         self.dir = Direction.UP  # Default direction
-        self.pos = (0, 0)  # Default position
 
     # Wrappers
     def measure_distance(self, direction):
@@ -108,16 +107,13 @@ class MappingLogic:
             self.set_direction(Direction.DOWN)
 
         # Calculate the distance to the parent node
-        distance = abs(current_node.x - parent_node.x) + abs(current_node.y - parent_node.y)
+        distance = fabs(current_node.x - parent_node.x) + fabs(current_node.y - parent_node.y)
 
         # Move the vehicle to the parent node
         self.ride_forward(distance, False)
 
         # Return the parent node
         return parent_node
-
-
-
 
 
     def run(self):
