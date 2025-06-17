@@ -1,10 +1,20 @@
 from machine import Pin, time_pulse_us
 import time
+from motors import MotorController
 
-trigger = Pin(11, Pin.OUT)
-echo = Pin(8, Pin.IN)
+"""
+trigger_1 = Pin(3, Pin.OUT)
+echo_1 = Pin(2, Pin.IN)
 
-def measure_distance():
+trigger_2 = Pin(7, Pin.OUT)
+echo_2 = Pin(6, Pin.IN)
+
+trigger_3 = Pin(7, Pin.OUT)
+echo_3 = Pin(6, Pin.IN)
+
+elems = [(trigger_1, echo_1), (trigger_2, echo_2)]
+
+def measure_distance(trigger, echo):
 
     trigger.low()
     time.sleep_us(2)
@@ -20,10 +30,29 @@ def measure_distance():
     distance_cm = duration / 58.0  # według dokumentacji SRF05
     return distance_cm
 
+some_fun()
+
+"""
+"""
 while True:
-    dist = measure_distance()
-    if dist is not None:
-        print("Odległość: {:.2f} cm".format(dist))
+    measurements = [None, None]
+    for i, (trigger, echo) in enumerate(elems):
+        measurements[i] = measure_distance(trigger, echo)
+    
+    if measurements[0] is not None and measurements[1] is not None:
+        print("Odległość pierwszego: {:.2f} cm".format(measurements[0]))
+        print("Odległość drugiego: {:.2f} cm".format(measurements[1]))
     else:
         print("Brak echa")
     time.sleep(0.5)
+"""
+        
+
+motor_controller = MotorController(
+    Pin(12, Pin.OUT),
+    Pin(13, Pin.OUT),
+    Pin(14, Pin.OUT),
+    Pin(15, Pin.OUT)
+)
+
+motor_controller.test_functionality()
