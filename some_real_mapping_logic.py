@@ -38,10 +38,10 @@ class MappingLogic:
                 if right < start_right - epsilon:
                     start_right = right
 
-                if right - epsilon > WALL_THRESHOLD:
+                if right - epsilon > self.vehicle.WALL_DISTANCE:
                     self.vehicle.motor_controller.stop()
                     return False
-                if left - epsilon > WALL_THRESHOLD:
+                if left - epsilon > self.vehicle.WALL_DISTANCE:
                     self.vehicle.motor_controller.stop()
                     return False
 
@@ -92,7 +92,7 @@ class MappingLogic:
 
     def first_free_direction(self, current_node):
         for direction in [Direction.LEFT, Direction.UP, Direction.RIGHT]:
-            if self.measure_distance(direction) > WALL_THRESHOLD:
+            if self.measure_distance(direction) > self.vehicle.WALL_DISTANCE:
                 dir = Direction((direction.value + self.dir.value) % 4)
                 if not current_node.does_child_exist(dir):
                     return direction
@@ -105,7 +105,7 @@ class MappingLogic:
         self.path.append(current_node)
         distance = self.measure_distance(direction)
         self.turn(direction)
-        self.ride_forward(distance - DISTANCE_TO_WALL, True)
+        self.ride_forward(distance - self.vehicle.COLLISION_DISTANCE, True)
         return current_node.create_child(self.dir)
 
     def backtrack(self, current_node):
