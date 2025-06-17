@@ -1,4 +1,4 @@
-from mapping_node import Node
+from some_real_mapping_node import Node
 from directions import Direction
 from globals import *
 # import _thread
@@ -9,6 +9,7 @@ class MappingLogic:
         self.start = None
         self.path = []
         self.dir = Direction.UP  # Default direction
+        self.pos = (0, 0)  # Default position
 
     # Wrappers
     def measure_distance(self, direction):
@@ -59,14 +60,27 @@ class MappingLogic:
             self.vehicle.turn_right()
             self.dir = Direction((self.dir.value + 1) % 4)
 
+    def set_direction(self, direction):
+        times_to_turn_right = (direction.value - self.dir.value) % 4
+        times_to_turn_left = (self.dir.value - direction.value) % 4
+        if times_to_turn_right < times_to_turn_left:
+            for _ in range(times_to_turn_right):
+                self.turn(Direction.RIGHT)
+        else:
+            for _ in range(times_to_turn_left):
+                self.turn(Direction.LEFT)
+
+        self.dir = direction
+
+
     # OG Logic (using wrappers)
     def create_start_node(self):
-        self.start = Node(*self.vehicle.get_pos())
+        self.start = Node()
 
     def first_free_direction(self, current_node):
         for direction in [Direction.LEFT, Direction.UP, Direction.RIGHT]:
             if self.measure_distance(direction) > WALL_THRESHOLD:
-                dir = Direction((direction.value + self.vehicle.dir.value) % 4)
+                dir = Direction((direction.value + self.dir.value) % 4)
                 if not current_node.does_child_exist(dir):
                     return direction
         return None
@@ -77,21 +91,21 @@ class MappingLogic:
             return self.backtrack(current_node)
         self.path.append(current_node)
         distance = self.measure_distance(direction)
-        self.vehicle.turn(direction)
+        self.turn(direction)
         self.ride_forward(distance - DISTANCE_TO_WALL, True)
-        return current_node.create_child(self.vehicle.dir, *self.vehicle.get_pos())
+        return current_node.create_child(self.dir)
 
     def backtrack(self, current_node):
         parent_node = self.path.pop()
 
         if parent_node.x < current_node.x:
-            self.vehicle.set_direction(Direction.LEFT)
+            self.set_direction(Direction.LEFT)
         elif parent_node.x > current_node.x:
-            self.vehicle.set_direction(Direction.RIGHT)
+            self.set_direction(Direction.RIGHT)
         elif parent_node.y < current_node.y:
-            self.vehicle.set_direction(Direction.UP)
+            self.set_direction(Direction.UP)
         elif parent_node.y > current_node.y:
-            self.vehicle.set_direction(Direction.DOWN)
+            self.set_direction(Direction.DOWN)
 
         # Calculate the distance to the parent node
         distance = abs(current_node.x - parent_node.x) + abs(current_node.y - parent_node.y)
