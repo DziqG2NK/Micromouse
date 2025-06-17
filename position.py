@@ -13,9 +13,9 @@ class SonicSensorsController():
         self.ECHO_R = ECHO_R
 
         self.elems = [
-            (TRIG_FRONT, ECHO_FRONT),
-            (TRIG_LEFT, ECHO_LEFT),
-            (TRIG_RIGHT, ECHO_RIGHT)
+            (TRIG_F, ECHO_F),
+            (TRIG_L, ECHO_L),
+            (TRIG_R, ECHO_R)
         ]
 
     def measure_distance(self, trigger, echo):
@@ -33,6 +33,26 @@ class SonicSensorsController():
 
         distance_cm = duration / 58.0  # według dokumentacji SRF05
         return distance_cm
+
+
+    def get_distances(self):
+        measurements = [None, None, None]
+        for i, (trigger, echo) in enumerate(self.elems):
+            measurements[i] = self.measure_distance(trigger, echo)
+        
+        if measurements[0] is not None:
+            print("Odległość przedniego: {:.2f} cm".format(measurements[0]))
+
+        elif measurements[1] is not None:
+            print("Odległość lewego: {:.2f} cm".format(measurements[1]))
+            
+        elif measurements[2] is not None:
+            print("Odległość prawego: {:.2f} cm".format(measurements[2]))
+        
+        else:
+            print("Brak echa")
+        
+        return measurements
 
 
     def run(self):
