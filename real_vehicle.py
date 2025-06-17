@@ -12,7 +12,7 @@ class RealVehicle():
 
     #Thresholds
     WALL_DISTANCE = 20
-    COLLISION_DISTANCE = 5
+    COLLISION_DISTANCE = 12
 
     WALL = 1
     NO_WALL = 0
@@ -40,6 +40,8 @@ class RealVehicle():
         self.front = "NO_WALL"
         self.left = "NO_WALL"
         self.right = "NO_WALL"
+        
+        self.is_already_turning = False
 
 
     def update_distances(self):
@@ -54,31 +56,99 @@ class RealVehicle():
         return self.front
     
 
+    def get_free_direction(self):
+        if self.distances[1] > RealVehicle.WALL_DISTANCE:
+            return "LEFT"
+        
+        elif self.distances[0] > RealVehicle.COLLISION_DISTANCE:
+            return "FRONT"
+        
+        elif self.distances[2] > RealVehicle.WALL_DISTANCE:
+            return "RIGHT"
+        
+        else:
+            return None
+
+
     def run(self):
-        print("Launching the vehicle...")
-        for i in range(1, 6):
-            print(f"{i}...")
-            sleep(1)
-        
-        while True:
-            self.update_distances()
+        try:
+            print("Launching the vehicle...")
+            for i in range(1, 2):
+                print(f"{i}...")
+                sleep(1)
             
-            print("Stan z przodu: ", self.is_front_collision(), self.front)
-
-            if self.is_front_collision():
-                if self.state == RealVehicle.DRIVING:
-                    self.motor_controller.stop()
-                    self.state = RealVehicle.STOPPED
-                    print("1")
-                print("2")
+            const_value_to_turn = None
+            direction = None
             
-            elif not self.is_front_collision():
-                if self.state == RealVehicle.STOPPED:
-                    self.motor_controller.forward()
-                    self.state = RealVehicle.DRIVING
-                    print("3")
-                print("4")
-        
-            sleep(0.5)
+            while True:
+                self.update_distances()
 
-        
+                if not self.is_already_turning:
+                    if self.is_front_collision():
+                        
+                        print(self.front, self.state)
+                        
+                        if self.state == RealVehicle.DRIVING:
+                            self.motor_controller.stop()
+                            self.state = RealVehicle.STOPPED
+                            print("1")
+                        
+                        if self.state == RealVehicle.STOPPED:
+                            direction = self.get_free_direction()
+                            print(direction)
+                            
+                            if direction is None:
+                                print("COŚ POSZŁO NIE TAK")
+                                self.motor_controller.stop()
+                                return
+
+                            elif direction == "LEFT" or direction == "RIGHT":
+                                const_value_to_turn = self.distances[0]
+                                
+                                self.state = RealVehicle.TURNING
+                                
+                                if direction == "LEFT":
+                                    self.motor_controller.turn_left(self.is_already_turning, self.distances[2], const_value_to_turn)
+                                    
+                                elif direction == "RIGHT":
+                                    self.motor_controller.turn_right(self.is_already_turning, self.distances[1], const_value_to_turn)
+                                    
+                                self.is_already_turning = True
+
+                            elif direction == "FRONT":
+                                print("COŚ POSZŁO NIE TAK")
+                                self.motor_controller.stop()
+                                return
+                            
+                            print("2")
+                        
+                    
+                    elif not self.is_front_collision():
+                        if self.state == RealVehicle.STOPPED:
+                            self.motor_controller.forward()
+                            self.state = RealVehicle.DRIVING
+                            print("3")
+                        print("4")
+                
+                    sleep(0.25)
+
+                else:
+                    if direction == "RIGHT":
+                        if self.motor_controller.turn_right(self.is_already_turning, self.distances[1], const_value_to_turn):
+                            self.state = RealVehicle.DRIVING
+                            direction = None
+                            self.is_already_turning = False
+                            self.motor_controller.forward()
+                            
+                    elif direction == "LEFT":
+                        if self.motor_controller.turn_left(self.is_already_turning, self.distances[2], const_value_to_turn):
+                            self.state = RealVehicle.DRIVING
+                            direction = None
+                            self.is_already_turning = False
+                            self.motor_controller.forward()
+                            
+                    sleep(0.02)
+                
+        finally:
+            self.motor_controller.stop()
+
