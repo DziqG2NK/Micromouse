@@ -1,13 +1,16 @@
 from machine import Pin, PWM
 from time import sleep
-
+from math import fabs
 
 class MotorController():
 
     MIN_DUTY = 0
     MAX_DUTY = 65535
     MOVEMENT_DUTY = 54000
-    ROTATION_DUTY = 52000
+    ROTATION_DUTY = 50000
+    
+    # in centimeters
+    ROTATION_DISTANCE_TOLERANCE = 0.25
 
     # Pins BIN1, BIN2 handles LEFT motor motion
     # Pins AIN1, AIN2 handles RIGHT motor motion
@@ -62,6 +65,42 @@ class MotorController():
         
         print("Driving forward")
         
+        
+    def is_in_tolerance(self, proper_distance, new_distance):
+        if proper_distance is None:
+            return new_distance is None
+            
+        diff = fabs(proper_distance -new_distance)
+        print("X", proper_distance, new_distance, diff, MotorController.ROTATION_DISTANCE_TOLERANCE)
+        return diff <= MotorController.ROTATION_DISTANCE_TOLERANCE
+
+
+    # UWAGA, trzeba przekazać dystans rzeczywisty, grunt żeby na skrzyżowaniu nie było odległości +200cm bo na tyle mierzą czujniki
+    # Przekazać w cm
+    # Imo trzeba to wywoływać po każdym mierzeniu odległości no i right_sensor_distance jest zmienne i pochodzi z pomiaru a front zapamiętane z przed obrotu
+    # Zwraca czy się skończył już obrót
+    def turn_left(self, is_already_turning, right_sensor_distance, const_front_sensor_distance):
+        if self.is_in_tolerance(const_front_sensor_distance, right_sensor_distance):
+            self.stop()
+            return True
+            
+        else:
+            if not is_already_turning:
+                self.left()
+            return False
+
+    
+    def turn_right(self, is_already_turning, left_sensor_distance, const_front_sensor_distance):
+        print("WARTOSĆ:", self.is_in_tolerance(const_front_sensor_distance, left_sensor_distance))
+        if self.is_in_tolerance(const_front_sensor_distance, left_sensor_distance):
+            self.stop()
+            return True
+            
+        else:
+            if not is_already_turning:
+                self.right()
+            return False
+
 
     def change_right_motor_speed(self):
 
@@ -122,13 +161,4 @@ class MotorController():
         
         print("stop")
         self.stop()
-        
 
-motor_controller = MotorController(
-    Pin(12, Pin.OUT),
-    Pin(13, Pin.OUT),
-    Pin(14, Pin.OUT),
-    Pin(15, Pin.OUT)
-)
-
-motor_controller.test_functionality()
