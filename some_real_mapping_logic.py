@@ -28,7 +28,7 @@ class MappingLogic:
             start_left = self.measure_distance(Direction.LEFT)
             start_right = self.measure_distance(Direction.RIGHT)
 
-        self.vehicle.ride_forward()
+        self.vehicle.motor_controller.forward()
         while start_distance - distance < self.measure_distance(Direction.UP):
             if forward:
                 left = self.measure_distance(Direction.LEFT)
@@ -39,25 +39,39 @@ class MappingLogic:
                     start_right = right
 
                 if right - epsilon > WALL_THRESHOLD:
-                    self.vehicle.stop()
+                    self.vehicle.motor_controller.stop()
                     return False
                 if left - epsilon > WALL_THRESHOLD:
-                    self.vehicle.stop()
+                    self.vehicle.motor_controller.stop()
                     return False
 
 
-        self.vehicle.stop()
+        self.vehicle.motor_controller.stop()
         return True
+
+    def turn_left(self):
+        up_distance = self.measure_distance(Direction.UP)
+        done = False
+        while not done:
+            done = self.vehicle.motor_controller.turn_left(done, self.measure_distance(Direction.RIGHT), up_distance)
+
+        self.dir = Direction((self.dir.value - 1) % 4)
+
+    def turn_right(self):
+        up_distance = self.measure_distance(Direction.UP)
+        done = False
+        while not done:
+            done = self.vehicle.motor_controller.turn_right(done, self.measure_distance(Direction.LEFT), up_distance)
+
+        self.dir = Direction((self.dir.value - 1) % 4)
 
     def turn(self, direction):
         if direction == Direction.LEFT:
-            self.vehicle.turn_left()
-            self.dir = Direction((self.dir.value - 1) % 4)
+            self.turn_left()
         elif direction == Direction.UP:
             pass
         elif direction == Direction.RIGHT:
-            self.vehicle.turn_right()
-            self.dir = Direction((self.dir.value + 1) % 4)
+            self.turn_right()
 
     def set_direction(self, direction):
         times_to_turn_right = (direction.value - self.dir.value) % 4
