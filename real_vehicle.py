@@ -81,6 +81,4 @@ class RealVehicle():
         
             sleep(0.5)
 
-vehicle = RealVehicle()
-vehicle.run()
         
