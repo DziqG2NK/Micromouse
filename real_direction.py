@@ -10,6 +10,9 @@ class Direction:
 
         self.value = value
 
+    def get_value(self):
+        return self.value
+
     def __add__(self, other):
         if isinstance(other, Direction):
             return Direction(self.value + other.value)

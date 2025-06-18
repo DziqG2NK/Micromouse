@@ -79,8 +79,8 @@ class MappingLogic:
             self.turn_right()
 
     def set_direction(self, direction):
-        times_to_turn_right = direction - self.dir
-        times_to_turn_left = self.dir - direction
+        times_to_turn_right = (direction - self.dir).get_value()
+        times_to_turn_left = (self.dir - direction).get_value()
         if times_to_turn_right < times_to_turn_left:
             for _ in range(times_to_turn_right):
                 self.turn("RIGHT")
