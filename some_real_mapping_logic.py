@@ -9,6 +9,7 @@ class MappingLogic:
         self.start = None
         self.path = []
         self.dir = Direction.UP  # Default direction
+        self.pos = (0, 0)
 
     # Wrappers
     def measure_distance(self, direction):
@@ -21,16 +22,16 @@ class MappingLogic:
         elif direction == Direction.RIGHT:
             return distances[2]
 
-    def ride_forward(self, distance, forward=True):
+    def ride_forward(self, distance, check_for_corridors=True):
         start_distance = self.measure_distance(Direction.UP)
-        if forward:
+        if check_for_corridors:
             epsilon = 1
             start_left = self.measure_distance(Direction.LEFT)
             start_right = self.measure_distance(Direction.RIGHT)
 
         self.vehicle.motor_controller.forward()
         while start_distance - distance < self.measure_distance(Direction.UP):
-            if forward:
+            if check_for_corridors:
                 left = self.measure_distance(Direction.LEFT)
                 right = self.measure_distance(Direction.RIGHT)
                 if left < start_left - epsilon:
@@ -40,13 +41,17 @@ class MappingLogic:
 
                 if right - epsilon > self.vehicle.WALL_DISTANCE:
                     self.vehicle.motor_controller.stop()
+                    traveled_distance = start_distance - self.measure_distance(Direction.UP)
+                    self.update_pos(traveled_distance)
                     return False
                 if left - epsilon > self.vehicle.WALL_DISTANCE:
                     self.vehicle.motor_controller.stop()
+                    traveled_distance = start_distance - self.measure_distance(Direction.UP)
+                    self.update_pos(traveled_distance)
                     return False
 
-
         self.vehicle.motor_controller.stop()
+        self.update_pos(distance)
         return True
 
     def turn_left(self):
@@ -85,9 +90,20 @@ class MappingLogic:
 
         self.dir = direction
 
+    def update_pos(self, distance):
+        if self.dir == Direction.UP:
+            self.pos = (self.pos[0], self.pos[1] - distance)
+        elif self.dir == Direction.LEFT:
+            self.pos = (self.pos[0] - distance, self.pos[1])
+        elif self.dir == Direction.RIGHT:
+            self.pos = (self.pos[0] + distance, self.pos[1])
+        elif self.dir == Direction.DOWN:
+            self.pos = (self.pos[0], self.pos[1] + distance)
+
+
     # OG Logic (using wrappers)
     def create_start_node(self):
-        self.start = Node()
+        self.start = Node(*self.pos)
 
     def first_free_direction(self, current_node):
         for direction in [Direction.LEFT, Direction.UP, Direction.RIGHT]:
@@ -105,7 +121,7 @@ class MappingLogic:
         distance = self.measure_distance(direction)
         self.turn(direction)
         self.ride_forward(distance - self.vehicle.COLLISION_DISTANCE, True)
-        return current_node.create_child(self.dir)
+        return current_node.create_child(self.dir, *self.pos)
 
     def backtrack(self, current_node):
         if not self.path:
