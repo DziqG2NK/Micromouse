@@ -11,8 +11,8 @@ class RealVehicle():
     TURNING = "TURNING"
 
     #Thresholds
-    WALL_DISTANCE = 20
-    COLLISION_DISTANCE = 12
+    WALL_DISTANCE = 10
+    COLLISION_DISTANCE = 8
 
     WALL = 1
     NO_WALL = 0
@@ -151,4 +151,5 @@ class RealVehicle():
                 
         finally:
             self.motor_controller.stop()
+
 

@@ -1,6 +1,8 @@
 from some_real_mapping_node import Node
 from real_direction import Direction
 from globals import *
+from math import fabs
+from time import sleep
 # import _thread
 
 class MappingLogic:
@@ -25,7 +27,7 @@ class MappingLogic:
     def ride_forward(self, distance, check_for_corridors=True):
         start_distance = self.measure_distance("UP")
         if check_for_corridors:
-            epsilon = 1
+            epsilon = 10
             start_left = self.measure_distance("LEFT")
             start_right = self.measure_distance("RIGHT")
 
@@ -40,11 +42,13 @@ class MappingLogic:
                     start_right = right
 
                 if right - epsilon > self.vehicle.WALL_DISTANCE:
+                    sleep(0.9)
                     self.vehicle.motor_controller.stop()
                     traveled_distance = start_distance - self.measure_distance("UP")
                     self.update_pos(traveled_distance)
                     return False
                 if left - epsilon > self.vehicle.WALL_DISTANCE:
+                    sleep(0.9)
                     self.vehicle.motor_controller.stop()
                     traveled_distance = start_distance - self.measure_distance("UP")
                     self.update_pos(traveled_distance)
@@ -56,28 +60,34 @@ class MappingLogic:
 
     def turn_left(self):
         up_distance = self.measure_distance("UP")
-        done = False
-        while not done:
-            done = self.vehicle.motor_controller.turn_left(done, self.measure_distance("RIGHT"), up_distance)
+        is_already_turning = False
+        while not is_already_turning:
+            is_already_turning = self.vehicle.motor_controller.turn_left(is_already_turning, self.measure_distance("RIGHT"), up_distance)
+            print("Dalej skręcam")
+
 
         self.dir -= 1
 
     def turn_right(self):
         up_distance = self.measure_distance("UP")
-        done = False
-        while not done:
-            done = self.vehicle.motor_controller.turn_right(done, self.measure_distance("LEFT"), up_distance)
+        is_already_turning = False
+        while not is_already_turning:
+            is_already_turning = self.vehicle.motor_controller.turn_right(is_already_turning, self.measure_distance("LEFT"), up_distance)
+            print("Dalej skręcam")
 
         self.dir += 1
 
     def turn(self, direction):
+        sleep(0.5)
         if direction == "LEFT":
             self.turn_left()
         elif direction == "UP":
             pass
         elif direction == "RIGHT":
             self.turn_right()
-
+        sleep(0.5)
+        
+        
     def set_direction(self, direction):
         times_to_turn_right = (direction - self.dir).get_value()
         times_to_turn_left = (self.dir - direction).get_value()
@@ -106,6 +116,7 @@ class MappingLogic:
         self.start = Node(*self.pos)
 
     def first_free_direction(self, current_node):
+        print("SZUKAM")
         for direction in ["LEFT", "UP", "RIGHT"]:
             if self.measure_distance(direction) > self.vehicle.WALL_DISTANCE:
                 dir = direction + self.dir
@@ -148,12 +159,16 @@ class MappingLogic:
 
 
     def run(self):
-        if self.start is None:
-            self.create_start_node()
+        try:
+            if self.start is None:
+                self.create_start_node()
 
-        current_node = self.start
-        while True:
-            new_node = self.run_cycle(current_node)
-            if new_node is None:
-                break
-            current_node = new_node
+            current_node = self.start
+            while True:
+                new_node = self.run_cycle(current_node)
+                if new_node is None:
+                    break
+                current_node = new_node
+        
+        finally:
+            self.vehicle.motor_controller.stop()

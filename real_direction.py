@@ -67,3 +67,5 @@ class Direction:
         direction_map = {0: 'UP', 1: 'RIGHT', 2: 'DOWN', 3: 'LEFT'}
         return f"Direction('{direction_map[self.value]}')"
 
+
+

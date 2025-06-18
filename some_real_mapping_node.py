@@ -1,4 +1,4 @@
-from xml.etree.ElementPath import xpath_tokenizer
+# from xml.etree.ElementPath import xpath_tokenizer
 
 from real_direction import Direction
 
@@ -51,3 +51,5 @@ class Node:
             return self.up_child is not None
         else:
             raise ValueError("Invalid direction. Use Direction.LEFT, Direction.RIGHT, Direction.UP, or Direction.DOWN.")
+
+

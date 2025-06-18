@@ -6,11 +6,11 @@ class MotorController():
 
     MIN_DUTY = 0
     MAX_DUTY = 65535
-    MOVEMENT_DUTY = 54000
-    ROTATION_DUTY = 50000
+    MOVEMENT_DUTY = 54000 #59000
+    ROTATION_DUTY = 50000 #51000
     
     # in centimeters
-    ROTATION_DISTANCE_TOLERANCE = 0.25
+    ROTATION_DISTANCE_TOLERANCE = 2.5
 
     # Pins BIN1, BIN2 handles LEFT motor motion
     # Pins AIN1, AIN2 handles RIGHT motor motion
@@ -43,7 +43,7 @@ class MotorController():
         self.BIN1.duty_u16(MotorController.ROTATION_DUTY)
         self.BIN2.duty_u16(MotorController.MIN_DUTY)
         
-        print("Turning right")
+        print("Turning RIGHT")
         
         
     def left(self):
@@ -53,7 +53,7 @@ class MotorController():
         self.BIN1.duty_u16(MotorController.MIN_DUTY)
         self.BIN2.duty_u16(MotorController.ROTATION_DUTY)
         
-        print("Turning left")
+        print("Turning LEFT")
 
 
     def forward(self):
@@ -71,7 +71,7 @@ class MotorController():
             return new_distance is None
             
         diff = fabs(proper_distance -new_distance)
-        print("X", proper_distance, new_distance, diff, MotorController.ROTATION_DISTANCE_TOLERANCE)
+        #print("X", proper_distance, new_distance, diff, MotorController.ROTATION_DISTANCE_TOLERANCE)
         return diff <= MotorController.ROTATION_DISTANCE_TOLERANCE
 
 
@@ -80,27 +80,60 @@ class MotorController():
     # Imo trzeba to wywoływać po każdym mierzeniu odległości no i right_sensor_distance jest zmienne i pochodzi z pomiaru a front zapamiętane z przed obrotu
     # Zwraca czy się skończył już obrót
     def turn_left(self, is_already_turning, right_sensor_distance, const_front_sensor_distance):
+        """
         if self.is_in_tolerance(const_front_sensor_distance, right_sensor_distance):
+            print("WARTOŚCI DO ZATRZYMANIA SKRETU: ", const_front_sensor_distance, right_sensor_distance)
             self.stop()
+            raise ValueError()
             return True
             
         else:
             if not is_already_turning:
                 self.left()
+                sleep(5)
             return False
-
+        """
+        if not is_already_turning:
+            print("PRZED")
+            self.left()
+            print("PO")
+            sleep(1.2)
+            return True
+        else:
+            print("WARTOŚCI DO ZATRZYMANIA SKRETU: ", const_front_sensor_distance, right_sensor_distance)
+            if self.is_in_tolerance(const_front_sensor_distance, right_sensor_distance):
+                self.stop()
+                raise ValueError()
+                return False
+            return True
     
     def turn_right(self, is_already_turning, left_sensor_distance, const_front_sensor_distance):
-        print("WARTOSĆ:", self.is_in_tolerance(const_front_sensor_distance, left_sensor_distance))
+        #print("WARTOSĆ:", self.is_in_tolerance(const_front_sensor_distance, left_sensor_distance))
+        """
         if self.is_in_tolerance(const_front_sensor_distance, left_sensor_distance):
+            print("WARTOŚCI DO ZATRZYMANIA SKRETU: ", const_front_sensor_distance, left_sensor_distance)
             self.stop()
             return True
             
         else:
             if not is_already_turning:
                 self.right()
+                sleep(5)
             return False
-
+        """
+        if not is_already_turning:
+            print("PRZED")
+            self.right()
+            print("PO")
+            sleep(1.2)
+            return True
+        else:
+            print("WARTOŚCI DO ZATRZYMANIA SKRETU: ", const_front_sensor_distance, left_sensor_distance)
+            if self.is_in_tolerance(const_front_sensor_distance, left_sensor_distance):
+                self.stop()
+                raise ValueError()
+                return False
+            return True
 
     def change_right_motor_speed(self):
 
@@ -161,4 +194,6 @@ class MotorController():
         
         print("stop")
         self.stop()
+
+
 

@@ -1,120 +1,173 @@
-from math import sin, cos
-from directions import Direction
-from globals import WALL_THRESHOLD
+from machine import Pin
+from time import sleep
+from motors import MotorController
+from position import SonicSensorsController
 
 
-class Vehicle:
-    def __init__(self, sensor_left, sensor_up, sensor_right):
-        self.x = 0
-        self.y = 0
-        self.dir = Direction.UP
-        self.sensor_left = sensor_left
-        self.sensor_up = sensor_up
-        self.sensor_right = sensor_right
-        self.is_simulation = False
+class RealVehicle():
+    #States of machine
+    STOPPED = "STOPPED"
+    DRIVING = "DRIVING"
+    TURNING = "TURNING"
 
-    def measure_distance(self, direction):
-        if direction == Direction.UP:
-            return self.sensor_up.measure()
-        elif direction == Direction.RIGHT:
-            return self.sensor_right.measure()
-        elif direction == Direction.LEFT:
-            return self.sensor_left.measure()
+    #Thresholds
+    WALL_DISTANCE = 12
+    COLLISION_DISTANCE = 12
 
-    def all_measurements(self):
-        return self.sensor_left.measure(), self.sensor_up.measure(), self.sensor_right.measure()
+    WALL = 1
+    NO_WALL = 0
 
 
-    def ride_forward(self, distance, check_for_road=False):
-        # Na ten moment taki kod do testowania symulacji, bo nie obsługuje silnika.
-        if self.is_simulation:
-            start = True
-
-            while distance > 0:
-                if check_for_road:
-                    if start:
-                        measurement_l, measurement_u, measurement_r = self.all_measurements()
-                        start = False
-
-                    measurement_u = self.measure_distance(Direction.UP)
-
-                    if measurement_u > WALL_THRESHOLD:
-                        measurement_l = min(self.measure_distance(Direction.LEFT), measurement_l)
-                        measurement_r = min(self.measure_distance(Direction.RIGHT), measurement_r)
-                        if measurement_l < self.measure_distance(Direction.LEFT) or measurement_r < self.measure_distance(Direction.RIGHT):
-                            return False
-
-                if self.dir == Direction.UP:
-                    self.y -= 1
-                elif self.dir == Direction.RIGHT:
-                    self.x += 1
-                elif self.dir == Direction.DOWN:
-                    self.y += 1
-                elif self.dir == Direction.LEFT:
-                    self.x -= 1
-                distance -= 1
-            return True
-
-        start_dist = self.measure_distance(Direction.UP)
-        while self.measure_distance(Direction.UP) < start_dist - distance:
-            # TODO: Obsługa silnika
-            # Kod zakłada że łazik jedzie idealnie w lini prostej i nie wykryje jeżeli zacznie zbliżać się do ściany.
-            pass
-
-    def set_direction(self, direction, epsilon= 0.1):
-        # Na ten moment taki kod do testowania symulacji, bo nie obsługuje silnika.
-        if self.is_simulation:
-            self.dir = direction
-            return
-
-        degrees_to_turn = (direction.value - self.dir.value) * 90
-
-        m_left = self.measure_distance(Direction.LEFT)
-        m_up = self.measure_distance(Direction.UP)
-        m_right = self.measure_distance(Direction.RIGHT)
-
-        # TODO: Obsługa silnika
+    def __init__(self):
+        self.motor_controller = MotorController(
+            AIN1 = Pin(12, Pin.OUT),
+            AIN2 = Pin(13, Pin.OUT),
+            BIN1 = Pin(14, Pin.OUT),
+            BIN2 = Pin(15, Pin.OUT)
+        )
+        self.position_controller = SonicSensorsController(
+            TRIG_F = Pin(6, Pin.OUT),
+            TRIG_R = Pin(7, Pin.OUT),
+            TRIG_L = Pin(8, Pin.OUT),
+            ECHO_F = Pin(2, Pin.IN),
+            ECHO_R = Pin(3, Pin.IN),
+            ECHO_L = Pin(4, Pin.IN)
+        )
+        self.state = RealVehicle.STOPPED
+        self.distances = [None, None, None]
+        
+        #Sensors
+        self.front = "NO_WALL"
+        self.left = "NO_WALL"
+        self.right = "NO_WALL"
+        
+        self.is_already_turning = False
 
 
-        self.dir = direction
-
-    def turn_left(self, epsilon=0.1):
-        if self.is_simulation:
-            self.set_direction(Direction((self.dir.value - 1) % 4), epsilon)
-            return
-
-        # TODO: Obsługa silnika
-
-    def turn_right(self, epsilon=0.1):
-        if self.is_simulation:
-            self.set_direction(Direction((self.dir.value + 1) % 4), epsilon)
-            return
-
-        # TODO: Obsługa silnika
-
-    def turn_around(self, epsilon=0.1):
-        if self.is_simulation:
-            self.set_direction(Direction((self.dir.value + 2) % 4), epsilon)
-            return
-
-        # TODO: Obsługa silnika
-
-    def turn(self, direction):
-        if direction == Direction.LEFT:
-            self.turn_left()
-        elif direction == Direction.RIGHT:
-            self.turn_right()
-        elif direction == Direction.UP:
-            pass
+    def update_distances(self):
+        self.distances = self.position_controller.get_distances()
+        
+        if self.distances[0] is None:
+            self.front = RealVehicle.NO_WALL
+        elif self.distances[0] <= RealVehicle.COLLISION_DISTANCE:
+            self.front = RealVehicle.WALL
         else:
-            raise ValueError("Invalid direction. Use Direction.LEFT or Direction.RIGHT.")
+            self.front = RealVehicle.NO_WALL
 
-    def set_pos(self, x, y):
-        self.x = x
-        self.y = y
+        # left
+        if self.distances[1] is None:
+            self.left = RealVehicle.NO_WALL
+        elif self.distances[1] <= RealVehicle.WALL_DISTANCE:
+            self.left = RealVehicle.WALL
+        else:
+            self.left = RealVehicle.NO_WALL
 
-    def get_pos(self):
-        return self.x, self.y
+        # right
+        if self.distances[2] is None:
+            self.right = RealVehicle.NO_WALL
+        elif self.distances[2] <= RealVehicle.WALL_DISTANCE:
+            self.right = RealVehicle.WALL
+        else:
+            self.right = RealVehicle.NO_WALL
 
-    def you_are_in_the_Matrix_Neo(self):
-        self.is_simulation = True
+    
+    def is_front_collision(self):
+        return self.front
+    
+
+    def get_free_direction(self):
+        if self.distances[1] > RealVehicle.WALL_DISTANCE:
+            return "LEFT"
+        
+        elif self.distances[0] > RealVehicle.COLLISION_DISTANCE:
+            return "FRONT"
+        
+        elif self.distances[2] > RealVehicle.WALL_DISTANCE:
+            return "RIGHT"
+        
+        else:
+            return None
+
+
+    def run(self):
+        try:
+            print("Launching the vehicle...")
+            for i in range(1, 2):
+                print(f"{i}...")
+                sleep(1)
+            
+            const_value_to_turn = None
+            direction = None
+            
+            while True:
+                self.update_distances()
+
+                if not self.is_already_turning:
+                    if self.is_front_collision():
+                        
+                        print(self.front, self.state)
+                        
+                        if self.state == RealVehicle.DRIVING:
+                            self.motor_controller.stop()
+                            self.state = RealVehicle.STOPPED
+                            print("1")
+                        
+                        if self.state == RealVehicle.STOPPED:
+                            direction = self.get_free_direction()
+                            print(direction)
+                            
+                            if direction is None:
+                                print("COŚ POSZŁO NIE TAK")
+                                self.motor_controller.stop()
+                                return
+
+                            elif direction == "LEFT" or direction == "RIGHT":
+                                const_value_to_turn = self.distances[0]
+                                
+                                self.state = RealVehicle.TURNING
+                                
+                                if direction == "LEFT":
+                                    self.motor_controller.turn_left(self.is_already_turning, self.distances[2], const_value_to_turn)
+                                    
+                                elif direction == "RIGHT":
+                                    self.motor_controller.turn_right(self.is_already_turning, self.distances[1], const_value_to_turn)
+                                    
+                                self.is_already_turning = True
+
+                            elif direction == "FRONT":
+                                print("COŚ POSZŁO NIE TAK")
+                                self.motor_controller.stop()
+                                return
+                            
+                            print("2")
+                        
+                    
+                    elif not self.is_front_collision():
+                        if self.state == RealVehicle.STOPPED:
+                            self.motor_controller.forward()
+                            self.state = RealVehicle.DRIVING
+                            print("3")
+                        print("4")
+                
+                    sleep(0.25)
+
+                else:
+                    if direction == "RIGHT":
+                        if self.motor_controller.turn_right(self.is_already_turning, self.distances[1], const_value_to_turn):
+                            self.state = RealVehicle.DRIVING
+                            direction = None
+                            self.is_already_turning = False
+                            self.motor_controller.forward()
+                            
+                    elif direction == "LEFT":
+                        if self.motor_controller.turn_left(self.is_already_turning, self.distances[2], const_value_to_turn):
+                            self.state = RealVehicle.DRIVING
+                            direction = None
+                            self.is_already_turning = False
+                            self.motor_controller.forward()
+                            
+                    sleep(0.02)
+                
+        finally:
+            self.motor_controller.stop()
+
