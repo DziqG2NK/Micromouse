@@ -30,6 +30,8 @@ class MappingLogic:
         return current_node.create_child(self.vehicle.dir, *self.vehicle.get_pos())
 
     def backtrack(self, current_node):
+        if not self.path:
+            return None
         parent_node = self.path.pop()
 
         if parent_node.x < current_node.x:
@@ -64,6 +66,3 @@ class MappingLogic:
             if new_node is None:
                 break
             current_node = new_node
-
-
-

@@ -3,6 +3,7 @@ from virtual_sensor import vSensor
 from directions import Direction
 from map import Map
 from mapping_logic import MappingLogic
+from path_finder import PathFinder
 
 # loading map
 
@@ -26,25 +27,28 @@ def create_virtual_vehicle():
 
     return vehicle
 
-map = Map(r'C:\Users\Domin\Documents\GitHub\Micromouse\simulation\example_map.png')
+map = Map(r'C:\Users\Domin\Documents\GitHub\Micromouse\simulation\backtracking_map.png')
 
 car = create_virtual_vehicle()
 
 map.add_vehicle(car)
+car.dir = Direction.DOWN
 
 engine = MappingLogic(car)
-engine.create_start_node()
-# engine.run()
+engine.run()
+start = engine.start
+sp = PathFinder(car, start)
+print(sp.find_path_to_finish())
+
 
 # map.display_map()
 
-current_node = engine.start
-car.dir = Direction.DOWN
-
-while current_node is not None:
-    map.display_map()
-    all_measurements(car)
-    current_node = engine.run_cycle(current_node)
+# current_node = engine.start
+#
+# while current_node is not None:
+#     map.display_map()
+#     all_measurements(car)
+#     current_node = engine.run_cycle(current_node)
 
 # print(car.get_pos())
 #

@@ -6,6 +6,7 @@ class Node:
         self.right_child = None
         self.down_child = None
         self.up_child = None
+        self.is_finish = False
 
     def create_child(self, direction):
         if direction == Direction.LEFT:
