@@ -1,17 +1,18 @@
-from some_real_mapping_node import Node
 from real_direction import Direction
-from globals import *
-# import _thread
 
-class MappingLogic:
-    def __init__(self, vehicle):
+
+class PathTravel:
+    def __init__(self, vehicle, path):
+        self.path = path
+        self.index = 0
+        self.start = self.path[self.index]
+        self.current_node = None
+        self.dir = Direction("DOWN")
         self.vehicle = vehicle
-        self.start = None
-        self.path = []
-        self.dir = Direction("UP")  # Default direction
-        self.pos = (0, 0)
+        self.pos = (self.start.x, self.start.y)
 
-    # Wrappers
+        # Wrappers
+
     def measure_distance(self, direction):
         distances = self.vehicle.position_controller.update_distances()
 
@@ -100,60 +101,29 @@ class MappingLogic:
         elif self.dir == "DOWN":
             self.pos = (self.pos[0], self.pos[1] + distance)
 
-
-    # OG Logic (using wrappers)
-    def create_start_node(self):
-        self.start = Node(*self.pos)
-
-    def first_free_direction(self, current_node):
-        for direction in ["LEFT", "UP", "RIGHT"]:
-            if self.measure_distance(direction) > self.vehicle.WALL_DISTANCE:
-                dir = direction + self.dir
-                if not current_node.does_child_exist(dir):
-                    return direction
-        return None
-
-    def run_cycle(self, current_node):
-        direction = self.first_free_direction(current_node)
-        if direction is None:
-            return self.backtrack(current_node)
-        self.path.append(current_node)
-        distance = self.measure_distance(direction)
-        self.turn(direction)
-        self.ride_forward(distance - self.vehicle.COLLISION_DISTANCE, True)
-        return current_node.create_child(self.dir, *self.pos)
-
-    def backtrack(self, current_node):
-        if not self.path:
-            return None
-        parent_node = self.path.pop()
-
-        if parent_node.x < current_node.x:
-            self.set_direction("LEFT")
-        elif parent_node.x > current_node.x:
-            self.set_direction("RIGHT")
-        elif parent_node.y < current_node.y:
-            self.set_direction("UP")
-        elif parent_node.y > current_node.y:
-            self.set_direction("DOWN")
-
-        # Calculate the distance to the parent node
-        distance = fabs(current_node.x - parent_node.x) + fabs(current_node.y - parent_node.y)
-
-        # Move the vehicle to the parent node
-        self.ride_forward(distance, False)
-
-        # Return the parent node
-        return parent_node
+    def distance_to_next_node(self, current_node, next_node):
+        EPSILON = 3
+        if next_node.x - EPSILON < current_node.x < next_node.x + EPSILON:
+            return fabs(current_node.y - next_node.y)
+        elif next_node.y - EPSILON < current_node.y < next_node.y + EPSILON:
+            return fabs(current_node.x - next_node.x)
 
 
     def run(self):
-        if self.start is None:
-            self.create_start_node()
+        self.set_direction("UP")
+        self.current_node = self.start
+        self.index += 1
 
-        current_node = self.start
-        while True:
-            new_node = self.run_cycle(current_node)
-            if new_node is None:
-                break
-            current_node = new_node
+        while self.index < len(self.path):
+            next_node = self.path[self.index]
+
+            if next_node == self.current_node.right_child:
+                self.set_direction("RIGHT")
+            elif next_node == self.current_node.left_child:
+                self.set_direction("LEFT")
+            elif next_node == self.current_node.up_child:
+                self.set_direction("UP")
+            elif next_node == self.current_node.down_child:
+                self.set_direction("DOWN")
+
+            self.ride_forward(self.distance_to_next_node(self.current_node, next_node), False)
