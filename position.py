@@ -26,12 +26,11 @@ class SonicSensorsController():
         time.sleep_us(10)
         trigger.low()
 
-        # Measure echo pulse width
-        duration = time_pulse_us(echo, 1, 30000)  # 30 ms timeout
+        duration = time_pulse_us(echo, 1, 30000)
         if duration < 0:
-            return None  # timeout
+            return None 
 
-        distance_cm = duration / 58.0  # według dokumentacji SRF05
+        distance_cm = duration / 58.0 
         return distance_cm
 
 
@@ -39,20 +38,41 @@ class SonicSensorsController():
         measurements = [None, None, None]
         for i, (trigger, echo) in enumerate(self.elems):
             measurements[i] = self.measure_distance(trigger, echo)
-        
+        """
         if measurements[0] is not None:
             print("Odległość przedniego: {:.2f} cm".format(measurements[0]))
 
-        elif measurements[1] is not None:
+        if measurements[1] is not None:
             print("Odległość lewego: {:.2f} cm".format(measurements[1]))
             
-        elif measurements[2] is not None:
+        if measurements[2] is not None:
             print("Odległość prawego: {:.2f} cm".format(measurements[2]))
         
         else:
             print("Brak echa")
-        
+        """
         return measurements
+
+
+    def update_distances(self):
+        measurements = [None, None, None]
+        for i, (trigger, echo) in enumerate(self.elems):
+            measurements[i] = self.measure_distance(trigger, echo)
+        """
+        if measurements[0] is not None:
+            print("Odległość przedniego: {:.2f} cm".format(measurements[0]))
+
+        if measurements[1] is not None:
+            print("Odległość lewego: {:.2f} cm".format(measurements[1]))
+            
+        if measurements[2] is not None:
+            print("Odległość prawego: {:.2f} cm".format(measurements[2]))
+        
+        else:
+            print("Brak echa")
+        """
+        return measurements
+
 
 
     def run(self):
@@ -68,3 +88,5 @@ class SonicSensorsController():
             else:
                 print("Brak echa")
             time.sleep(0.5)
+
+
