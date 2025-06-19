@@ -71,28 +71,13 @@ class MotorController():
             return new_distance is None
             
         diff = fabs(proper_distance -new_distance)
-        #print("X", proper_distance, new_distance, diff, MotorController.ROTATION_DISTANCE_TOLERANCE)
+        
         return diff <= MotorController.ROTATION_DISTANCE_TOLERANCE
 
 
-    # UWAGA, trzeba przekazać dystans rzeczywisty, grunt żeby na skrzyżowaniu nie było odległości +200cm bo na tyle mierzą czujniki
-    # Przekazać w cm
-    # Imo trzeba to wywoływać po każdym mierzeniu odległości no i right_sensor_distance jest zmienne i pochodzi z pomiaru a front zapamiętane z przed obrotu
-    # Zwraca czy się skończył już obrót
+    # Returns if turning left manouver has ended
     def turn_left(self, is_already_turning, right_sensor_distance, const_front_sensor_distance):
-        """
-        if self.is_in_tolerance(const_front_sensor_distance, right_sensor_distance):
-            print("WARTOŚCI DO ZATRZYMANIA SKRETU: ", const_front_sensor_distance, right_sensor_distance)
-            self.stop()
-            raise ValueError()
-            return True
-            
-        else:
-            if not is_already_turning:
-                self.left()
-                sleep(5)
-            return False
-        """
+        
         if not is_already_turning:
             print("PRZED")
             self.left()
@@ -108,19 +93,7 @@ class MotorController():
             return True
     
     def turn_right(self, is_already_turning, left_sensor_distance, const_front_sensor_distance):
-        #print("WARTOSĆ:", self.is_in_tolerance(const_front_sensor_distance, left_sensor_distance))
-        """
-        if self.is_in_tolerance(const_front_sensor_distance, left_sensor_distance):
-            print("WARTOŚCI DO ZATRZYMANIA SKRETU: ", const_front_sensor_distance, left_sensor_distance)
-            self.stop()
-            return True
-            
-        else:
-            if not is_already_turning:
-                self.right()
-                sleep(5)
-            return False
-        """
+    
         if not is_already_turning:
             print("PRZED")
             self.right()
@@ -134,34 +107,6 @@ class MotorController():
                 raise ValueError()
                 return False
             return True
-
-    def change_right_motor_speed(self):
-
-
-        PWM_AIN1 = PWM(Pin(14, Pin.OUT))
-        AIN2_pin = Pin(15, Pin.OUT)
-        AIN2_pin.value(0)
-
-        pin_12 = Pin(12, Pin.OUT)
-        pin_13 = Pin(13, Pin.OUT)
-
-        print("Start")
-
-        for duty in range(0, 65536, 1000):
-            PWM_AIN1.duty_u16(duty)
-            
-            print(duty)
-            print(PWM_AIN1.duty_u16(), AIN2_pin.value(), pin_12.value(), pin_13.value())
-            
-            sleep(0.1)
-
-        for duty in range(65536, 0, -1000):
-            PWM_AIN1.duty_u16(duty)
-
-            print(duty)
-            print(PWM_AIN1.duty_u16(), AIN2_pin.value(), pin_12.value(), pin_13.value())
-
-            sleep(0.1)
 
         
     def log(self):

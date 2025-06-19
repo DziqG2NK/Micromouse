@@ -4,7 +4,7 @@ from motors import MotorController
 from position import SonicSensorsController
 
 
-class RealVehicle():
+class Vehicle():
     #States of machine
     STOPPED = "STOPPED"
     DRIVING = "DRIVING"
@@ -33,7 +33,7 @@ class RealVehicle():
             ECHO_R = Pin(3, Pin.IN),
             ECHO_L = Pin(4, Pin.IN)
         )
-        self.state = RealVehicle.STOPPED
+        self.state = Vehicle.STOPPED
         self.distances = [None, None, None]
         
         #Sensors
@@ -48,27 +48,27 @@ class RealVehicle():
         self.distances = self.position_controller.get_distances()
         
         if self.distances[0] is None:
-            self.front = RealVehicle.NO_WALL
-        elif self.distances[0] <= RealVehicle.COLLISION_DISTANCE:
-            self.front = RealVehicle.WALL
+            self.front = Vehicle.NO_WALL
+        elif self.distances[0] <= Vehicle.COLLISION_DISTANCE:
+            self.front = Vehicle.WALL
         else:
-            self.front = RealVehicle.NO_WALL
+            self.front = Vehicle.NO_WALL
 
         # left
         if self.distances[1] is None:
-            self.left = RealVehicle.NO_WALL
-        elif self.distances[1] <= RealVehicle.WALL_DISTANCE:
-            self.left = RealVehicle.WALL
+            self.left = Vehicle.NO_WALL
+        elif self.distances[1] <= Vehicle.WALL_DISTANCE:
+            self.left = Vehicle.WALL
         else:
-            self.left = RealVehicle.NO_WALL
+            self.left = Vehicle.NO_WALL
 
         # right
         if self.distances[2] is None:
-            self.right = RealVehicle.NO_WALL
-        elif self.distances[2] <= RealVehicle.WALL_DISTANCE:
-            self.right = RealVehicle.WALL
+            self.right = Vehicle.NO_WALL
+        elif self.distances[2] <= Vehicle.WALL_DISTANCE:
+            self.right = Vehicle.WALL
         else:
-            self.right = RealVehicle.NO_WALL
+            self.right = Vehicle.NO_WALL
 
     
     def is_front_collision(self):
@@ -76,13 +76,13 @@ class RealVehicle():
     
 
     def get_free_direction(self):
-        if self.distances[1] > RealVehicle.WALL_DISTANCE:
+        if self.distances[1] > Vehicle.WALL_DISTANCE:
             return "LEFT"
         
-        elif self.distances[0] > RealVehicle.COLLISION_DISTANCE:
+        elif self.distances[0] > Vehicle.COLLISION_DISTANCE:
             return "FRONT"
         
-        elif self.distances[2] > RealVehicle.WALL_DISTANCE:
+        elif self.distances[2] > Vehicle.WALL_DISTANCE:
             return "RIGHT"
         
         else:
@@ -107,12 +107,12 @@ class RealVehicle():
                         
                         print(self.front, self.state)
                         
-                        if self.state == RealVehicle.DRIVING:
+                        if self.state == Vehicle.DRIVING:
                             self.motor_controller.stop()
-                            self.state = RealVehicle.STOPPED
+                            self.state = Vehicle.STOPPED
                             print("1")
                         
-                        if self.state == RealVehicle.STOPPED:
+                        if self.state == Vehicle.STOPPED:
                             direction = self.get_free_direction()
                             print(direction)
                             
@@ -124,7 +124,7 @@ class RealVehicle():
                             elif direction == "LEFT" or direction == "RIGHT":
                                 const_value_to_turn = self.distances[0]
                                 
-                                self.state = RealVehicle.TURNING
+                                self.state = Vehicle.TURNING
                                 
                                 if direction == "LEFT":
                                     self.motor_controller.turn_left(self.is_already_turning, self.distances[2], const_value_to_turn)
@@ -143,9 +143,9 @@ class RealVehicle():
                         
                     
                     elif not self.is_front_collision():
-                        if self.state == RealVehicle.STOPPED:
+                        if self.state == Vehicle.STOPPED:
                             self.motor_controller.forward()
-                            self.state = RealVehicle.DRIVING
+                            self.state = Vehicle.DRIVING
                             print("3")
                         print("4")
                 
@@ -154,14 +154,14 @@ class RealVehicle():
                 else:
                     if direction == "RIGHT":
                         if self.motor_controller.turn_right(self.is_already_turning, self.distances[1], const_value_to_turn):
-                            self.state = RealVehicle.DRIVING
+                            self.state = Vehicle.DRIVING
                             direction = None
                             self.is_already_turning = False
                             self.motor_controller.forward()
                             
                     elif direction == "LEFT":
                         if self.motor_controller.turn_left(self.is_already_turning, self.distances[2], const_value_to_turn):
-                            self.state = RealVehicle.DRIVING
+                            self.state = Vehicle.DRIVING
                             direction = None
                             self.is_already_turning = False
                             self.motor_controller.forward()

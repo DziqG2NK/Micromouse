@@ -1,4 +1,4 @@
-# Zmienne globalne
+# Global thresholds
 
-WALL_THRESHOLD = 7 # Dystans w cm od ściany, przy którym łazik uznaje, że ma dalszych rozgałęzień do eksploracji.
-DISTANCE_TO_WALL = 3 # Dystans w cm od ściany, przy którym łazik uznaje, że nie ma już miejsca na jazdę.
+WALL_THRESHOLD = 7 # Real distance from wall up to which rover assume that we've got a intersection
+DISTANCE_TO_WALL = 3 # Distance of collision with wall

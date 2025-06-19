@@ -26,12 +26,11 @@ class SonicSensorsController():
         time.sleep_us(10)
         trigger.low()
 
-        # Measure echo pulse width
-        duration = time_pulse_us(echo, 1, 30000)  # 30 ms timeout
+        duration = time_pulse_us(echo, 1, 30000)
         if duration < 0:
-            return None  # timeout
+            return None 
 
-        distance_cm = duration / 58.0  # według dokumentacji SRF05
+        distance_cm = duration / 58.0 
         return distance_cm
 
 
