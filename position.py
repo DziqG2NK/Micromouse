@@ -90,4 +90,3 @@ class SonicSensorsController():
                 print("Brak echa")
             time.sleep(0.5)
 
-

@@ -68,4 +68,3 @@ class Direction:
         return f"Direction('{direction_map[self.value]}')"
 
 
-

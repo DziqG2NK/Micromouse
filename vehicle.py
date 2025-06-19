@@ -170,4 +170,3 @@ class RealVehicle():
                 
         finally:
             self.motor_controller.stop()
-

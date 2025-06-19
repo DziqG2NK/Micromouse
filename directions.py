@@ -1,6 +1,4 @@
-from enum import Enum
-
-class Direction(Enum):
+class Direction():
     UP = 0
     RIGHT = 1
     DOWN = 2

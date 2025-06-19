@@ -52,4 +52,3 @@ class Node:
         else:
             raise ValueError("Invalid direction. Use Direction.LEFT, Direction.RIGHT, Direction.UP, or Direction.DOWN.")
 
-
